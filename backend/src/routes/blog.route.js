@@ -59,6 +59,8 @@ router.get("/", async (req, res) => {
   }
 });
 
+//get single blog by id
+
 router.get("/:id", async (req, res) => {
   try {
     const postId = req.params.id;
@@ -67,6 +69,10 @@ router.get("/:id", async (req, res) => {
       return res.status(404).send({ message: "Post not found" });
     }
 
+    const comment = await Comment.find({ postId: postId }).populate(
+      "user",
+      "username email"
+    );
     res.status(200).send({
       message: "Post retrieved successfully",
       post: post,
@@ -109,6 +115,8 @@ router.delete("/:id", async (req, res) => {
     if (!post) {
       return res.status(404).send({ message: "Post not found" });
     }
+
+    await Comment.deleteMany({ postId: postId });
 
     res.status(200).send({
       message: "Post deleted successfully",
