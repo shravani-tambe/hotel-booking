@@ -1,16 +1,17 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const blogApi = createApi()
-
 export const blogApi = createApi({
-  reducerPath: 'blogsApi',
-  baseQuery: fetchBaseQuery({ baseUrl: 'https://pokeapi.co/api/v2/' }),
+  reducerPath: "blogsApi",
+  baseQuery: fetchBaseQuery({
+    baseUrl: "https://localhost:5000/api/",
+    credentials: "include",
+  }),
   endpoints: (builder) => ({
-    getPokemonByName: builder.query<Pokemon, string>({
-      query: (name) => `pokemon/${name}`,
+    fetchBlogs: builder.query({
+      query: ({ search = "", category = "", location = "" }) =>
+        `/blog?search=${search}&category=${category}&location=${location}`,
     }),
   }),
-})
+});
 
-
-export const {} = blogApi; 
+export const { useFetchBlogsQuery } = blogApi;
