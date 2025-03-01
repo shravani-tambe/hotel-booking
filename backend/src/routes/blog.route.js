@@ -1,10 +1,14 @@
 const express = require("express");
-const router = express.Router();
+const Comment = require("../model/comment.model");
 const Blog = require("../model/blog.model");
+const verifyToken = require("../middleware/verifyToken");
+const isAdmin = require("../middleware/isAdmin");
+const router = express.Router();
 
-router.post("/create-post", async (req, res) => {
+//create a blog post
+router.post("/create-post", verifyToken, isAdmin, async (req, res) => {
   try {
-    const newPost = new Blog({ ...req.body });
+    const newPost = new Blog({ ...req.body, author: req.userId });
     await newPost.save();
     res
       .status(201)
@@ -15,6 +19,7 @@ router.post("/create-post", async (req, res) => {
   }
 });
 
+//get all blogs
 router.get("/", async (req, res) => {
   try {
     const { search, category, location } = req.query; //req query gets split and stored in three vars
@@ -48,7 +53,9 @@ router.get("/", async (req, res) => {
       };
     }
 
-    const post = await Blog.find(query).sort({ createdAt: -1 });
+    const post = await Blog.find(query)
+      .populate("author", "email")
+      .sort({ createdAt: -1 });
     res.status(200).send({
       message: "All posts retrieved successfully",
       posts: post,
@@ -61,7 +68,7 @@ router.get("/", async (req, res) => {
 
 //get single blog by id
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", verifyToken, async (req, res) => {
   try {
     const postId = req.params.id;
     const post = await Blog.findById(postId);
@@ -84,7 +91,7 @@ router.get("/:id", async (req, res) => {
 });
 
 //update a blog post
-router.patch("/update-post/:id", async (req, res) => {
+router.patch("/update-post/:id", verifyToken, async (req, res) => {
   try {
     const postId = req.params.id;
     const updatePost = await Blog.findByIdAndUpdate(postId, ...req.body, {
@@ -107,7 +114,7 @@ router.patch("/update-post/:id", async (req, res) => {
 });
 
 //delete a blog post
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", verifyToken, async (req, res) => {
   try {
     const postId = req.params.id;
     const post = await Blog.findByIdAndDelete(postId);

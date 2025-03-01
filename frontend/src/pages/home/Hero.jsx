@@ -1,13 +1,13 @@
 import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 
-import "swiper/css";
-import "swiper/css/pagination";
-
 import Img1 from "../../assets/hero-carousel/img1.jpg";
 import Img2 from "../../assets/hero-carousel/img2.jpg";
 import Img3 from "../../assets/hero-carousel/img3.jpg";
 import Img4 from "../../assets/hero-carousel/img4.jpg";
+
+import "swiper/css";
+import "swiper/css/pagination";
 
 import { Autoplay, Pagination } from "swiper/modules";
 
