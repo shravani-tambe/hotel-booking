@@ -56,10 +56,7 @@ router.get("/", async (req, res) => {
     const post = await Blog.find(query)
       .populate("author", "email")
       .sort({ createdAt: -1 });
-    res.status(200).send({
-      message: "All posts retrieved successfully",
-      posts: post,
-    });
+    res.status(200).send(posts);
   } catch (error) {
     console.error("Error creating post", error);
     res.status(500).send({ message: "Error creating post" });

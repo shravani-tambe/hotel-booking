@@ -8,7 +8,7 @@ const Blogs = () => {
   const [query, setQuery] = useState({ search: "", category: "" });
 
   //get data using redux
-  const { data: blogs = [] } = useFetchBlogsQuery(query);
+  const { data: blogs = [], error, isLoading } = useFetchBlogsQuery(query);
   console.log(blogs);
 
   const handleSearchChange = (e) => {
@@ -24,6 +24,18 @@ const Blogs = () => {
         handleSearchChange={handleSearchChange}
         handleSearch={handleSearch}
       />
+
+      {isLoading && <div> Loading....... </div>}
+      {error && <div>{error.toString()} </div>}
+
+      <div>
+        {blogs.map((blog) => (
+          <Link to={`/blogs/${blog._id}`} key={blog._id} className="shadow-md">
+            <img src={blog.coverImg} alt="" className="h-80 w-full" />
+            <h2 className="text-xl p-4">{blog.title}</h2>
+          </Link>
+        ))}
+      </div>
       <div>Blog Card</div>
     </div>
   );
