@@ -5,11 +5,16 @@ const mongoose = require("mongoose");
 const port = process.env.PORT || 5000;
 require("dotenv").config();
 
-// parse optiom
-app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
-// import Routes
+app.use(express.json());
+
 const blogRoutes = require("./src/routes/blog.route");
 const commentRoutes = require("./src/routes/comment.route");
 const userRoutes = require("./src/routes/auth.user.route");
@@ -22,8 +27,6 @@ async function main() {
   try {
     await mongoose.connect(process.env.MONGODB_URL);
     console.log("MongoDB connected successfully!");
-
-    app.use("/api/blogs", blogRoutes);
 
     app.get("/", (req, res) => {
       res.send("Hello World");
