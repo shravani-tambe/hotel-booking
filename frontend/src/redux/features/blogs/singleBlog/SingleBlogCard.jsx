@@ -3,8 +3,16 @@ import EditorJSHTML from "editorjs-html";
 import { formatDate } from "../../../../utils/formatDate";
 
 const SingleBlogCard = ({ blog }) => {
-  const { title, description, content, coverImg, category, rating, author } =
-    blog || {};
+  const {
+    title,
+    description,
+    content,
+    coverImg,
+    category,
+    rating,
+    author,
+    createdAt,
+  } = blog || {};
 
   const htmlContent = EditorJSHTML.parse(content).join("");
 
@@ -15,7 +23,7 @@ const SingleBlogCard = ({ blog }) => {
 
         {/*TODO: CHANGE AUTHOR */}
         <p className="mb-6">
-          {formatDate(createdAt)} by{" "}
+          {formatDate(blog.createdAt)} by{" "}
           <span className="text-blue-400 cursor-pointer">
             {author?.username}
           </span>

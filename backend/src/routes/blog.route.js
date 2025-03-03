@@ -91,7 +91,7 @@ router.get("/:id", verifyToken, async (req, res) => {
 router.patch("/update-post/:id", verifyToken, async (req, res) => {
   try {
     const postId = req.params.id;
-    const updatePost = await Blog.findByIdAndUpdate(postId, ...req.body, {
+    const updatePost = await Blog.findByIdAndUpdate(postId, req.body, {
       new: true,
       runValidators: true,
     });
