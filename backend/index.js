@@ -4,6 +4,8 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const port = process.env.PORT || 5000;
 require("dotenv").config();
+const cookieParser = require("cookie-parser");
+const bodyParser = require("body-parser");
 
 app.use(
   cors({
@@ -14,6 +16,15 @@ app.use(
 );
 
 app.use(express.json());
+app.use(cookieParser());
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 
 const blogRoutes = require("./src/routes/blog.route");
 const commentRoutes = require("./src/routes/comment.route");
@@ -29,9 +40,8 @@ async function main() {
     console.log("MongoDB connected successfully!");
 
     app.get("/", (req, res) => {
-      res.send("Hello World");
+      res.send("Hotel Rooftop Server is Running..!");
     });
-
     // start the server
     app.listen(port, () => {
       console.log(`Server running on port ${port}`);

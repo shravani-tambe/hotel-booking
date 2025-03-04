@@ -12,12 +12,12 @@ router.post("/register", async (req, res) => {
 
     await user.save();
     res
-      .status(200)
+      .status(201)
       .send({ message: "User registration successful!", user: user });
     console.log(user);
   } catch (error) {
     console.error("Failed to register", error);
-    res.status(500).json({ message: "Registration failed!" });
+    res.status(500).send({ message: "Registration failed!" });
   }
 });
 
@@ -29,7 +29,7 @@ router.post("/login", async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return res.status(400).send({ message: "User not found!" });
+      return res.status(404).send({ message: "User not found!" });
     }
 
     const isMatch = await user.comparePassword(password);
@@ -42,9 +42,9 @@ router.post("/login", async (req, res) => {
 
     const token = await generateToken(user._id);
     res.cookie("token", token, {
-      httpsOnly: true, //works only with https://
+      httpOnly: true, //works only with https://
       secure: true,
-      sameSite: true,
+      sameSite: "None",
     });
 
     res.status(200).send({
@@ -58,7 +58,7 @@ router.post("/login", async (req, res) => {
     });
   } catch (error) {
     console.error("Failed to login", error);
-    res.status(500).json({ message: "Login failed! Try again." });
+    res.status(500).send({ message: "Login failed! Try again." });
   }
 });
 
@@ -106,7 +106,7 @@ router.put("/users/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { role } = req.body;
-    const user = await User.findByIdandUpdate(id, { role }, { new: true });
+    const user = await User.findByIdAndUpdate(id, { role }, { new: true });
     if (!user) {
       return res.status(404).send({ message: "User not found" });
     }

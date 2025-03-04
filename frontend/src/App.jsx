@@ -13,7 +13,7 @@ function App() {
         <div className="flex-grow">
           <Outlet />
         </div>
-        <footer className="mt-auto">Footer</footer>
+        <Footer className="mt-auto" />
       </div>
     </>
   );

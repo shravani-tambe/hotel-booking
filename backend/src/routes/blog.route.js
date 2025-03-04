@@ -2,29 +2,32 @@ const express = require("express");
 const Comment = require("../model/comment.model");
 const Blog = require("../model/blog.model");
 const verifyToken = require("../middleware/verifyToken");
-const isAdmin = require("../middleware/isAdmin");
+const isAdmin = require("../middleware/admin");
 const router = express.Router();
 
 //create a blog post
 router.post("/create-post", verifyToken, isAdmin, async (req, res) => {
   try {
-    const newPost = new Blog({ ...req.body, author: req.userId });
+    const { title, content, category, coverImg } = req.body;
+
+    const newPost = new Blog({
+      ...req.body,
+      author: req.userId,
+    });
     await newPost.save();
     res
       .status(201)
       .send({ message: "Post created successfully", post: newPost });
   } catch (error) {
-    console.error("Error creating post: ", error);
-    res.status(500).json({ message: "Error creating post" });
+    console.error("Error creating post:", error);
+    res.status(500).send({ message: "Failed to create post" });
   }
 });
 
-//get all blogs
+//get all blogs (public route)
 router.get("/", async (req, res) => {
   try {
-    const { search, category, location } = req.query; //req query gets split and stored in three vars
-
-    console.log(search);
+    const { search, category, location } = req.query;
 
     let query = {};
 
@@ -41,15 +44,14 @@ router.get("/", async (req, res) => {
     if (category) {
       query = {
         ...query,
-        //spread operator: takes all key value pairs in query and puts them in a new object copy
-        category: category,
+        category,
       };
     }
 
     if (location) {
       query = {
         ...query,
-        location: location,
+        location,
       };
     }
 
@@ -58,60 +60,63 @@ router.get("/", async (req, res) => {
       .sort({ createdAt: -1 });
     res.status(200).send(posts);
   } catch (error) {
-    console.error("Error creating post", error);
-    res.status(500).send({ message: "Error creating post" });
+    console.error("Error fetching posts:", error);
+    res.status(500).send({ message: "Failed to fetch posts" });
   }
 });
 
 //get single blog by id
-
-router.get("/:id", verifyToken, async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const postId = req.params.id;
-    const post = await Blog.findById(postId);
+
+    const post = await Blog.findById(postId).populate(
+      "author",
+      "email username"
+    );
+
     if (!post) {
       return res.status(404).send({ message: "Post not found" });
     }
 
-    const comment = await Comment.find({ postId: postId }).populate(
+    const comments = await Comment.find({ postId: postId }).populate(
       "user",
       "username email"
     );
-    res.status(200).send({
-      message: "Post retrieved successfully",
-      post: post,
-    });
+
+    res.status(200).send({ post, comments });
   } catch (error) {
-    console.error("Error fetching single post", error);
-    res.status(500).send({ message: "Error fetching single post" });
+    console.error("Error fetching post:", error);
+    res.status(500).send({ message: "Failed to fetch post" });
   }
 });
 
 //update a blog post
-router.patch("/update-post/:id", verifyToken, async (req, res) => {
+router.patch("/update-post/:id", verifyToken, isAdmin, async (req, res) => {
   try {
     const postId = req.params.id;
-    const updatePost = await Blog.findByIdAndUpdate(postId, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const updatedPost = await Blog.findByIdAndUpdate(
+      postId,
+      { ...req.body },
+      { new: true }
+    );
 
-    if (!updatePost) {
-      return res.status(404).send({ message: "Post not found " });
+    if (!updatedPost) {
+      return res.status(404).send({ message: "Post not found" });
     }
 
     res.status(200).send({
       message: "Post updated successfully",
-      post: updatePost,
+      post: updatedPost,
     });
   } catch (error) {
-    console.error("Error updating post:", error);
-    res.status(500).send({ message: "Error updating post:" });
+    console.error("Error fetching post:", error);
+    res.status(500).send({ message: "Failed to fetch post" });
   }
 });
 
 //delete a blog post
-router.delete("/:id", verifyToken, async (req, res) => {
+router.delete("/:id", async (req, res) => {
   try {
     const postId = req.params.id;
     const post = await Blog.findByIdAndDelete(postId);
@@ -120,15 +125,15 @@ router.delete("/:id", verifyToken, async (req, res) => {
       return res.status(404).send({ message: "Post not found" });
     }
 
+    //delete related comments
     await Comment.deleteMany({ postId: postId });
 
     res.status(200).send({
-      message: "Post deleted successfully",
-      post: post,
+      message: "Post and associated comments deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting post", error);
-    res.status(500).send({ message: "Error deleting post" });
+    console.error("Error deleting post:", error);
+    res.status(500).send({ message: "Failed to delete post" });
   }
 });
 
@@ -136,28 +141,30 @@ router.delete("/:id", verifyToken, async (req, res) => {
 router.get("/related/:id", async (req, res) => {
   try {
     const { id } = req.params;
+
     if (!id) {
-      return res.status(400).send({ message: "Post id is required" });
+      return res.status(400).send({ message: "Blog ID is required" });
     }
 
     const blog = await Blog.findById(id);
 
     if (!blog) {
-      return res.status(404).send({ message: "Post ID is not found!" });
+      return res.status(404).send({ message: "Blog post not found" });
     }
 
     const titleRegex = new RegExp(blog.title.split(" ").join("|"), "i");
 
     const relatedQuery = {
-      _id: { $ne: id }, //exclude the current blog by id
+      _id: { $ne: id },
       title: { $regex: titleRegex },
     };
 
-    const relatedPost = await Blog.find(relatedQuery);
-    res.status(200).send({ message: "Related post found!", post: relatedPost });
+    const relatedPosts = await Blog.find(relatedQuery);
+
+    res.status(200).send(relatedPosts);
   } catch (error) {
-    console.error("Error fetching related post", error);
-    res.status(500).send({ message: "Error fetching post" });
+    console.error("Error fetching related posts:", error);
+    res.status(500).send({ message: "Failed to fetch related posts" });
   }
 });
 
