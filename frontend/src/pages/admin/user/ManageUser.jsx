@@ -5,7 +5,7 @@ import {
 } from "../../../redux/features/auth/authApi";
 import { Link, useNavigate } from "react-router-dom";
 import { MdModeEdit } from "react-icons/md";
-import UpdateUserModal from "./UpdateUserModal";
+import UpdateUserModal from "./UpdateUserModel";
 
 const ManageUser = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);

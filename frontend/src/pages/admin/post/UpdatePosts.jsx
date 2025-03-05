@@ -5,9 +5,9 @@ import {
 } from "../../../redux/features/blogs/blogsApi";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
-import EditorJS from "editorjs";
-import List from "editorjs-list";
-import Header from "editorjs-header";
+import EditorJS from "@editorjs/editorjs";
+import List from "@editorjs/list";
+import Header from "@editorjs/header";
 
 const UpdatePosts = () => {
   const editorRef = useRef(null);
