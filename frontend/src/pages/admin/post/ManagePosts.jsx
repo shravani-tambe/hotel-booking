@@ -136,7 +136,7 @@ const ManagePosts = () => {
                     target="_blank"
                   >
                     {" "}
-                    Md Al Mamun
+                    XYZ
                   </a>
                   .
                 </div>
